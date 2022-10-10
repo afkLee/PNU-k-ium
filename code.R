@@ -3,7 +3,7 @@
 #라이브러리 로딩 
 
 
-# 파일읽기 (위치는 각자 알아서 변경)
+# 파일읽기 
 data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
