@@ -4,7 +4,7 @@
 
 
 # 파일읽기 (위치는 각자 알아서 변경)
-data<-read.csv("/Users/leeeungjae/Downloads/TrainSet.csv" , header= T, encoding = "UTF-8")
+data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
 head(data)
