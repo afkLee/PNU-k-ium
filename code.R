@@ -1,29 +1,42 @@
 #라이브러리 다운로드
-
+install.packages("tm")
 #라이브러리 로딩 
-
+library(stringr)
+library("tm")
 
 # 파일읽기 
 data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
-head(data)
-
-
-View(data)
-
-
-summary(data)
+#head(data)
+#View(data)
+#summary(data)
 
 #class의 이름을 보여준다.
 colnames(data)
 
 
-#class별로 데이터들 저장
-Findingsdata <- Corpus(VectorSource(data[,"Findings"]))
-Conclusiondata <- Corpus(VectorSource(data[,"Conclusion."]))
-AcuteInfarctiondata <- Corpus(VectorSource(data[,"AcuteInfarction"]))
+#뇌졸증 유무에 따라 데이터 스플릿
+splitdata <- split(data, data[,"AcuteInfarction"])
+
+#띄어쓰기 기준으로 문자열 분해
+strsplit(splitdata, " ")
+
+
+#뇌졸증 유무 글자 길이 
+nchar(splitdata["0"])
+nchar(splitdata["1"])
+
+
+#문장 자르기(띄어쓰기 기준)
+splitData1 <- str_split(splitdata["1"], " ")
+splitData0 <- str_split(splitdata["0"], " ")
+
+splitData0
+splitData1
 
 
 
 
+
+  
