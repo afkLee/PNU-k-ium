@@ -36,7 +36,16 @@ splitData0
 splitData1
 
 
+#스플릿한 데이터 에 각 문자 갯수 알려줌 
+table(splitData0)
+table(splitData1)
 
+nchar(splitData0)
+
+splitData0 <- sub('\n"[ADDENDUM]\\nClinical', "", splitData0)
+
+table(splitData0)
+nchar(splitData0)
 
 
   
