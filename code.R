@@ -1,8 +1,16 @@
 #라이브러리 다운로드
 install.packages("tm")
+install.packages("wordcloud")
+install.packages("RColorBrewer")
+install.packages("KoNLP")
+
 #라이브러리 로딩 
 library(stringr)
+library(RColorBrewer)
 library("tm")
+library(wordcloud)
+library(KoNLP)
+
 
 # 파일읽기 
 data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
@@ -42,10 +50,19 @@ table(splitData1)
 
 nchar(splitData0)
 
-splitData0 <- sub('\n"[ADDENDUM]\\nClinical', "", splitData0)
 
-table(splitData0)
-nchar(splitData0)
+#스플릿 한 테이브 상위 100개로 나눠서 정렬후 출력 
+
+splitData0_top100 <- head(sort(table(splitData0), decreasing = T),100)
+splitData1_top100 <- head(sort(table(splitData1),decreasing =  T),100)
+
+splitData0_top100
+splitData1_top100
+
+
+#문장 빈도별 단어구름 
+wordcloud(names(splitData0_top100), splitData0_top100 , family="AppleGothic")
+wordcloud(names(splitData1_top100), splitData1_top100 , family="AppleGothic")
 
 
   
