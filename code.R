@@ -2,9 +2,14 @@
 install.packages("tm")
 install.packages("wordcloud")
 install.packages("RColorBrewer")
-install.packages("KoNLP")
-
+install.packages("multilinguer")
+library(multilinguer) 
+install_jdk()
+install.packages(c("hash", "tau", "Sejong", "RSQLite", "devtools", "bit", "rex", "lazyeval", "htmlwidgets", "crosstalk", "promises", "later", "sessioninfo", "xopen", "bit64", "blob", "DBI", "memoise", "plogr", "covr", "DT", "rcmdcheck", "rversions"), type = "binary")
+install.packages("remotes")
+remotes::install_github('haven-jeon/KoNLP', upgrade = "never", INSTALL_opts=c("--no-multiarch"))
 #라이브러리 로딩 
+library(rJava)
 library(stringr)
 library(RColorBrewer)
 library("tm")
@@ -13,12 +18,12 @@ library(KoNLP)
 
 
 # 파일읽기 
-data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
+data<-read.csv("/Users/changjaewon/PNU-k-ium-main/TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
-#head(data)
-#View(data)
-#summary(data)
+head(data)
+View(data)
+summary(data)
 
 #class의 이름을 보여준다.
 colnames(data)
@@ -28,12 +33,15 @@ colnames(data)
 splitdata <- split(data, data[,"AcuteInfarction"])
 
 #띄어쓰기 기준으로 문자열 분해
-strsplit(splitdata, " ")
+splitdata<-as.character(splitdata) # 에러 수정(non-character argument)
+splitdata1<-strsplit(splitdata, " ")
 
 
 #뇌졸증 유무 글자 길이 
-nchar(splitdata["0"])
-nchar(splitdata["1"])
+?nchar
+head(splitdata1)
+nchar(splitdata1["0"])
+nchar(splitdata1["1"])
 
 
 #문장 자르기(띄어쓰기 기준)
