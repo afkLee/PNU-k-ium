@@ -1,26 +1,18 @@
 #라이브러리 다운로드
 install.packages("tm")
-install.packages("wordcloud")
-install.packages("RColorBrewer")
+
 
 #라이브러리 로딩 
 library(stringr)
-library(RColorBrewer)
 library(NLP)
 library("tm")
-library(wordcloud)
-
+library(plyr)
 
 # 파일읽기 
 data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
-#head(data)
-#View(data)
-#summary(data)
 
-#class의 이름을 보여준다.
-colnames(data) 
 
 
 
@@ -28,9 +20,9 @@ colnames(data)
 splitdata <- split(data, data$AcuteInfarction)
 
 
-#뇌졸증 유무 글자 길이 
-nchar(splitdata["0"])
-nchar(splitdata["1"])
+
+
+
 
 
 
@@ -42,42 +34,37 @@ nchar(splitdata["1"])
 splitData1 <- split(splitdata$`1`, " ")
 splitData0 <- split(splitdata$`0`, " ")
 
-
-
-
 splitData0_Findings<- as.data.frame(splitData0$` `$Findings, stringsAsFactors = F)
-#row 갯수 
-splitData0_Findings%>%nrow
+splitData1_Findings<- as.data.frame(splitData1$` `$Findings, stringsAsFactors = F)
+splitData0_Conclustion<- as.data.frame(splitData0$` `$Conclusion., stringsAsFactors = F)
+splitData1_Conclustion<- as.data.frame(splitData1$` `$Conclusion., stringsAsFactors = F)
 
 
-#결측치 
-sum(is.na(splitData0$` `$Findings))
 
 
 
 splitData0_Findings <- unique(splitData0_Findings)
-#row 갯수 
-splitData0_Findings%>%nrow()
-
-
+splitData1_Findings <- unique(splitData1_Findings)
+splitData0_Conclustion <- unique(splitData0_Conclustion)
+splitData1_Conclustion <- unique(splitData1_Conclustion)
 
 
 splitData0_Findings <- unlist(splitData0_Findings)
+splitData1_Findings <- unlist(splitData1_Findings)
+splitData0_Conclustion <- unlist(splitData0_Conclustion)
+splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
-splitData0_Findings <-str_split(splitData0_Findings," ")
+
+#단어 자르기 
+splitData0_Findings <-str_split(splitData0_Findings,",")
+splitData1_Findings <-str_split(splitData1_Findings,",")
+splitData0_Conclustion <-str_split(splitData0_Conclustion,",")
+splitData1_Conclustion <-str_split(splitData1_Conclustion,",")
+
 splitData0_Findings <- unlist(splitData0_Findings)
-
-splitData0_Findings <- as.data.frame(splitData0_Findings)
-
-
-
-
-#스플릿 한 테이브 상위 100개로 나눠서 정렬후 출력 
-
-splitData0_Findings_top100 <- head(sort(table(splitData0_Findings), decreasing = T),100)
-
-
-splitData0_Findings_top100
+splitData1_Findings <- unlist(splitData1_Findings)
+splitData0_Conclustion <- unlist(splitData0_Conclustion)
+splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
 
 
@@ -85,10 +72,91 @@ splitData0_Findings_top100
 
 
 
-#문장 빈도별 단어구름 
-wordcloud(names(splitData0_Findings_top100), splitData0_Findings_top100 , family="AppleGothic")
+#진단 
+sentimental = function(sentences, positive, negative){
+  
+  scores = laply(sentences, function(sentence, positive, negative) {
+    
+    sentence <- unlist(sentence) 
+    sentence <-   str_split(sentence,",")
+
+    
+    words = unlist(sentence)                    # unlist() : list를 vector 객체로 구조변경
+    
+    pos.matches = match(words, positive)           # words의 단어를 positive에서 matching
+    neg.matches = match(words, negative)
+    
+    pos.matches = !is.na(pos.matches)            # NA 제거, 위치(숫자)만 추출
+    neg.matches = !is.na(neg.matches)
+    
+    score = sum(pos.matches) - sum(neg.matches)  # 긍정 - 부정   
+    return(score)
+  }, positive, negative)
+  
+  scores.df = data.frame(score=scores, text=sentences)
+  return(scores.df)
+}
+
+resultFindingsScore = list()
+resultBool = list()
+resultConclusionScore = list()
 
 
+
+for(i in 1:6190){
+result=sentimental(data$Findings[i], splitData1_Findings, splitData0_Findings)
+  if(result$score >=0){
+    resultFindingsScore[i] <- T
+    if(data$AcuteInfarction[i] == 0){
+      resultBool[i] <- F
+    }else{
+      resultBool[i] <- T
+    }
+  }else{
+    resultFindingsScore[i] <- F
+    if(data$AcuteInfarction[i] == 0){
+      resultBool[i] <- F
+    }else{
+      resultBool[i] <- T
+    }   
+  }
+}
+
+for(i in 1:6190){
+  result=sentimental(data$Conclusion.[i], splitData1_Conclustion, splitData0_Conclustion)
+  if(result$score >=0){
+    resultConclusionScore[i] <- T
+  }else{
+    resultConclusionScore[i] <- F
+
+  }
+}
+
+
+resultScore = list()
+for(i in 1:6190){
+  if(resultFindingsScore[i] == T && resultConclusionScore[i] ==T){
+    resultScore[i] <- T
+  }else{
+    resultScore[i] <- F
+  }
+  
+}
+
+resultScore <- unlist(resultScore)
+resultBool <- unlist(resultBool)
+accuracy = 0
+
+for(i in 1:6190){
+  if(resultScore[i] == resultBool[i]){
+    accuracy = accuracy+1
+  }
+  
+}
+
+
+#정확도
+print((accuracy/ 6190)*100)
 
   
   
