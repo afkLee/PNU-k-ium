@@ -9,8 +9,7 @@ library("tm")
 library(plyr)
 
 # 파일읽기 
-data<-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
-
+data <-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
 
@@ -56,6 +55,16 @@ splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
 
 #단어 자르기 
+ splitData0_Findings <-str_split(splitData0_Findings,"\n")
+splitData1_Findings <-str_split(splitData1_Findings,"\n")
+splitData0_Conclustion <-str_split(splitData0_Conclustion,"\n")
+splitData1_Conclustion <-str_split(splitData1_Conclustion,"\n")
+
+splitData0_Findings <- unlist(splitData0_Findings)
+splitData1_Findings <- unlist(splitData1_Findings)
+splitData0_Conclustion <- unlist(splitData0_Conclustion)
+splitData1_Conclustion <- unlist(splitData1_Conclustion)
+
 splitData0_Findings <-str_split(splitData0_Findings,",")
 splitData1_Findings <-str_split(splitData1_Findings,",")
 splitData0_Conclustion <-str_split(splitData0_Conclustion,",")
@@ -65,6 +74,18 @@ splitData0_Findings <- unlist(splitData0_Findings)
 splitData1_Findings <- unlist(splitData1_Findings)
 splitData0_Conclustion <- unlist(splitData0_Conclustion)
 splitData1_Conclustion <- unlist(splitData1_Conclustion)
+
+
+splitData0_Findings <-str_split(splitData0_Findings,"at")
+splitData1_Findings <-str_split(splitData1_Findings,"at")
+splitData0_Conclustion <-str_split(splitData0_Conclustion,"at")
+splitData1_Conclustion <-str_split(splitData1_Conclustion,"at")
+
+splitData0_Findings <- unlist(splitData0_Findings)
+splitData1_Findings <- unlist(splitData1_Findings)
+splitData0_Conclustion <- unlist(splitData0_Conclustion)
+splitData1_Conclustion <- unlist(splitData1_Conclustion)
+
 
 
 
@@ -78,7 +99,13 @@ sentimental = function(sentences, positive, negative){
   scores = laply(sentences, function(sentence, positive, negative) {
     
     sentence <- unlist(sentence) 
+    sentence <-   str_split(sentence,"\n")
+    sentence <- unlist(sentence) 
     sentence <-   str_split(sentence,",")
+    sentence <- unlist(sentence) 
+    sentence <-   str_split(sentence,"at")
+    
+
 
     
     words = unlist(sentence)                    # unlist() : list를 vector 객체로 구조변경
@@ -97,9 +124,13 @@ sentimental = function(sentences, positive, negative){
   return(scores.df)
 }
 
+
+
 resultFindingsScore = list()
 resultBool = list()
 resultConclusionScore = list()
+
+
 
 
 
@@ -137,7 +168,9 @@ resultScore = list()
 for(i in 1:6190){
   if(resultFindingsScore[i] == T && resultConclusionScore[i] ==T){
     resultScore[i] <- T
-  }else{
+  }
+
+  else{
     resultScore[i] <- F
   }
   
