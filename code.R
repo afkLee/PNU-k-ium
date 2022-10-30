@@ -8,8 +8,12 @@ library(NLP)
 library("tm")
 library(plyr)
 
+
+
 # 파일읽기 
 data <-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
+
+
 
 
 
@@ -119,11 +123,10 @@ sentimental = function(sentences, positive, negative){
     
     
      # 긍정 - 부정   
-    if(sum(neg.matches) != 0 && (sum(pos.matches) - sum(neg.matches)) < 0){
-      score = -1
-    }else{
-      score = sum(pos.matches) - sum(neg.matches)
-    }
+  
+    score = sum(pos.matches) - sum(neg.matches)
+  
+    
     
     return(score)
   }, positive, negative)
@@ -146,7 +149,7 @@ for(i in 1:6190){
 result=sentimental(data$Findings[i], splitData1_Findings, splitData0_Findings)
 results=sentimental(data$Findings[i], splitData1_Conclustion, splitData0_Conclustion)
 
-  if(result$score >=0 && results$score >= 0){
+  if(result$score > 0 || results$score > 0){
     resultFindingsScore[i] <- T
     if(data$AcuteInfarction[i] == 0){
       resultBool[i] <- F
@@ -167,7 +170,7 @@ for(i in 1:6190){
   result=sentimental(data$Conclusion.[i], splitData1_Conclustion, splitData0_Conclustion)
   results=sentimental(data$Conclusion.[i], splitData1_Findings, splitData0_Findings)
   
-  if(result$score >=0 && results$score >= 0){
+  if(result$score >= 0 || results$score >= 0){
     resultConclusionScore[i] <- T
   }else{
     resultConclusionScore[i] <- F
@@ -181,6 +184,7 @@ for(i in 1:6190){
   if(resultFindingsScore[i] == T && resultConclusionScore[i] ==T){
     resultScore[i] <- T
   }
+  
 
   else{
     resultScore[i] <- F
@@ -204,6 +208,8 @@ for(i in 1:6190){
 
 
 #정확도
+
 print((accuracy/ 6190)*100)
+
 
   
