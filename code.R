@@ -15,6 +15,7 @@ data <-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
 
+
 #뇌졸증 유무에 따라 데이터 스플릿
 splitdata <- split(data, data$AcuteInfarction)
 
@@ -74,7 +75,6 @@ splitData0_Findings <- unlist(splitData0_Findings)
 splitData1_Findings <- unlist(splitData1_Findings)
 splitData0_Conclustion <- unlist(splitData0_Conclustion)
 splitData1_Conclustion <- unlist(splitData1_Conclustion)
-
 
 splitData0_Findings <-str_split(splitData0_Findings,"at")
 splitData1_Findings <-str_split(splitData1_Findings,"at")
@@ -136,7 +136,9 @@ resultConclusionScore = list()
 
 for(i in 1:6190){
 result=sentimental(data$Findings[i], splitData1_Findings, splitData0_Findings)
-  if(result$score >=0){
+results=sentimental(data$Findings[i], splitData1_Conclustion, splitData0_Conclustion)
+
+  if(result$score >=0 && results$score >=0){
     resultFindingsScore[i] <- T
     if(data$AcuteInfarction[i] == 0){
       resultBool[i] <- F
@@ -155,7 +157,9 @@ result=sentimental(data$Findings[i], splitData1_Findings, splitData0_Findings)
 
 for(i in 1:6190){
   result=sentimental(data$Conclusion.[i], splitData1_Conclustion, splitData0_Conclustion)
-  if(result$score >=0){
+  results=sentimental(data$Conclusion.[i], splitData1_Findings, splitData0_Findings)
+  
+  if(result$score >=0 && results$score >=0){
     resultConclusionScore[i] <- T
   }else{
     resultConclusionScore[i] <- F
