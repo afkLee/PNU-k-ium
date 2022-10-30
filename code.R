@@ -16,6 +16,7 @@ data <-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
 
+
 #뇌졸증 유무에 따라 데이터 스플릿
 splitdata <- split(data, data$AcuteInfarction)
 
@@ -93,6 +94,7 @@ splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
 
 
+
 #진단 
 sentimental = function(sentences, positive, negative){
   
@@ -116,7 +118,14 @@ sentimental = function(sentences, positive, negative){
     pos.matches = !is.na(pos.matches)            # NA 제거, 위치(숫자)만 추출
     neg.matches = !is.na(neg.matches)
     
-    score = sum(pos.matches) - sum(neg.matches)  # 긍정 - 부정   
+    
+    if(sum(neg.matches) == 0){
+      score = sum(pos.matches) - sum(neg.matches)  # 긍정 - 부정   
+    }
+    else if(sum(neg.matches) != 0 || (sum(pos.matches) - sum(neg.matches)) == 0){
+      score = -1
+    }
+    
     return(score)
   }, positive, negative)
   
