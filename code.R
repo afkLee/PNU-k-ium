@@ -10,9 +10,11 @@ library(plyr)
 
 
 
-# 파일읽기 
-data <-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
+#  Valid파일
+validData <-read.csv("./ValidationSet.csv" , header= T, encoding = "UTF-8")
 
+# 텍스트마이닝 파일 
+data <-read.csv("./TrainSet.csv" , header= T, encoding = "UTF-8")
 
 
 
@@ -60,7 +62,7 @@ splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
 
 #단어 자르기 
- splitData0_Findings <-str_split(splitData0_Findings,"\n")
+splitData0_Findings <-str_split(splitData0_Findings,"\n")
 splitData1_Findings <-str_split(splitData1_Findings,"\n")
 splitData0_Conclustion <-str_split(splitData0_Conclustion,"\n")
 splitData1_Conclustion <-str_split(splitData1_Conclustion,"\n")
@@ -97,6 +99,14 @@ splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
 
 
+Findingspositives1 = list()
+Findingsnegatives1 = list()
+Findingspositives2 = list()
+Findingsnegatives2 = list()
+Conclustionpositives1 = list()
+Conclustionnegatives1 = list()
+Conclustionpositives2 = list()
+Conclustionnegatives2 = list()
 
 #진단 
 sentimental = function(sentences, positive, negative){
@@ -109,9 +119,9 @@ sentimental = function(sentences, positive, negative){
     sentence <-   str_split(sentence,",")
     sentence <- unlist(sentence) 
     sentence <-   str_split(sentence,"at")
+
     
-
-
+    
     
     words = unlist(sentence)                    # unlist() : list를 vector 객체로 구조변경
     
@@ -122,16 +132,17 @@ sentimental = function(sentences, positive, negative){
     neg.matches = !is.na(neg.matches)
     
     
-     # 긍정 - 부정   
-  
+    # 긍정 - 부정   
+
+
     score = sum(pos.matches) - sum(neg.matches)
-  
     
+    score.df = data.frame(score=score, positive =  sum(pos.matches),negative = sum(neg.matches))
     
-    return(score)
+    return (score.df)
   }, positive, negative)
   
-  scores.df = data.frame(score=scores, text=sentences)
+  scores.df = data.frame(score=scores$score, text=sentences,positive = scores$positive , negative = scores$negative)
   return(scores.df)
 }
 
@@ -145,20 +156,26 @@ resultConclusionScore = list()
 
 
 
-for(i in 1:6190){
-result=sentimental(data$Findings[i], splitData1_Findings, splitData0_Findings)
-results=sentimental(data$Findings[i], splitData1_Conclustion, splitData0_Conclustion)
-
+for(i in 1:2653){
+  result=sentimental(validData$Findings[i], splitData1_Findings, splitData0_Findings)
+  results=sentimental(validData$Findings[i], splitData1_Conclustion, splitData0_Conclustion)
+  
+  Findingspositives1[i] <- result$positive
+  Findingsnegatives1[i] <- result$negative
+  Findingspositives2[i] <- results$positive
+  Findingsnegatives2[i] <- results$negative
+  
+  
   if(result$score > 0 || results$score > 0){
     resultFindingsScore[i] <- T
-    if(data$AcuteInfarction[i] == 0){
+    if(validData$AcuteInfarction[i] == 0){
       resultBool[i] <- F
     }else{
       resultBool[i] <- T
     }
   }else{
     resultFindingsScore[i] <- F
-    if(data$AcuteInfarction[i] == 0){
+    if(validData$AcuteInfarction[i] == 0){
       resultBool[i] <- F
     }else{
       resultBool[i] <- T
@@ -166,26 +183,49 @@ results=sentimental(data$Findings[i], splitData1_Conclustion, splitData0_Conclus
   }
 }
 
-for(i in 1:6190){
-  result=sentimental(data$Conclusion.[i], splitData1_Conclustion, splitData0_Conclustion)
-  results=sentimental(data$Conclusion.[i], splitData1_Findings, splitData0_Findings)
+for(i in 1:2653){
+  result=sentimental(validData$Conclusion.[i], splitData1_Conclustion, splitData0_Conclustion)
+  results=sentimental(validData$Conclusion.[i], splitData1_Findings, splitData0_Findings)
   
+  
+  Conclustionpositives1[i] <- result$positive
+  Conclustionnegatives1[i] <- result$negative
+  Conclustionpositives2[i] <- results$positive
+  Conclustionnegatives2[i] <- results$negative
   if(result$score >= 0 || results$score >= 0){
     resultConclusionScore[i] <- T
   }else{
     resultConclusionScore[i] <- F
-
+    
   }
 }
 
+allPositives = list()
+allNegatives = list()
+
+
+
+for(i in 1:2653){
+  allPositives[i] <- Findingspositives1[[i]]+Findingspositives2[[i]]+Conclustionpositives1[[i]]+Conclustionpositives2[[i]]
+  allNegatives[i] <-Findingsnegatives1[[i]]+Findingsnegatives2[[i]]+Conclustionnegatives1[[i]]+Conclustionnegatives2[[i]]
+}
+
+
+
 
 resultScore = list()
-for(i in 1:6190){
-  if(resultFindingsScore[i] == T && resultConclusionScore[i] ==T){
+for(i in 1:2653){
+  A <- allPositives[[i]] + allNegatives[[i]]
+  
+  cat(allPositives[[i]]/A , " " , allNegatives[[i]]/A, "\n")
+
+  
+  
+  if (( allPositives[[i]] > allNegatives[[i]]  )){
     resultScore[i] <- T
+    
   }
   
-
   else{
     resultScore[i] <- F
   }
@@ -199,17 +239,21 @@ accuracy = 0
 
 
 
-for(i in 1:6190){
+for(i in 1:2653){
   if(resultScore[i] == resultBool[i]){
     accuracy = accuracy+1
   }
+
   
 }
 
 
 #정확도
 
-print((accuracy/ 6190)*100)
+print((accuracy/2653))
 
 
-  
+
+head(sort(table(resultScore), decreasing = T),2)
+head(sort(table(validData$AcuteInfarction), decreasing = T),2)
+
