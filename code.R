@@ -1,13 +1,15 @@
 #라이브러리 다운로드
 install.packages("tm")
-
+install.packages("wordcloud")
+install.packages("RColorBrewer")
 
 #라이브러리 로딩 
 library(stringr)
 library(NLP)
 library("tm")
 library(plyr)
-
+library(wordcloud)
+library(RColorBrewer)
 
 
 #  Valid파일
@@ -35,8 +37,6 @@ splitdata <- split(data, data$AcuteInfarction)
 
 #문장 자르기(띄어쓰기 기준)
 
-
-
 splitData1 <- split(splitdata$`1`, " ")
 splitData0 <- split(splitdata$`0`, " ")
 
@@ -61,40 +61,65 @@ splitData0_Conclustion <- unlist(splitData0_Conclustion)
 splitData1_Conclustion <- unlist(splitData1_Conclustion)
 
 
+#단어 자르기 function
+splitText = function(Texts){
+  
+  
+    
+  Texts <- unlist(Texts) 
+  Texts <-   str_split(Texts,"\n")
+  Texts <- unlist(Texts) 
+  Texts <-   str_split(Texts,",")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"at")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"axial T2WI")
+    Texts <- unlist(Texts)
+    Texts <-   str_split(Texts,"axial FLAIR")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"sagittal T1WI")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"Axial T1WI")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"axial T2* GRE image")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"Clinical inform")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"axial DWI")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"hy.")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"2. Microangiop")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"3. Microangiop")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"rophy.")
+    Texts <- unlist(Texts) 
+    Texts <-   str_split(Texts,"the bil")
+    Texts <- unlist(Texts)  
+    Texts <-   str_split(Texts,"bil")
+    Texts <- unlist(Texts)  
+    
+    
+    
+    words = unlist(Texts)                    # unlist() : list를 vector 객체로 구조변경
+
+
+  return (words);
+}
+
+
 #단어 자르기 
-splitData0_Findings <-str_split(splitData0_Findings,"\n")
-splitData1_Findings <-str_split(splitData1_Findings,"\n")
-splitData0_Conclustion <-str_split(splitData0_Conclustion,"\n")
-splitData1_Conclustion <-str_split(splitData1_Conclustion,"\n")
-
-splitData0_Findings <- unlist(splitData0_Findings)
-splitData1_Findings <- unlist(splitData1_Findings)
-splitData0_Conclustion <- unlist(splitData0_Conclustion)
-splitData1_Conclustion <- unlist(splitData1_Conclustion)
-
-splitData0_Findings <-str_split(splitData0_Findings,",")
-splitData1_Findings <-str_split(splitData1_Findings,",")
-splitData0_Conclustion <-str_split(splitData0_Conclustion,",")
-splitData1_Conclustion <-str_split(splitData1_Conclustion,",")
-
-splitData0_Findings <- unlist(splitData0_Findings)
-splitData1_Findings <- unlist(splitData1_Findings)
-splitData0_Conclustion <- unlist(splitData0_Conclustion)
-splitData1_Conclustion <- unlist(splitData1_Conclustion)
-
-splitData0_Findings <-str_split(splitData0_Findings,"at")
-splitData1_Findings <-str_split(splitData1_Findings,"at")
-splitData0_Conclustion <-str_split(splitData0_Conclustion,"at")
-splitData1_Conclustion <-str_split(splitData1_Conclustion,"at")
-
-splitData0_Findings <- unlist(splitData0_Findings)
-splitData1_Findings <- unlist(splitData1_Findings)
-splitData0_Conclustion <- unlist(splitData0_Conclustion)
-splitData1_Conclustion <- unlist(splitData1_Conclustion)
+splitData0_Findings <- splitText(splitData0_Findings)  
+splitData1_Findings <-splitText(splitData1_Findings) 
+splitData0_Conclustion <-splitText(splitData0_Conclustion) 
+splitData1_Conclustion <-splitText(splitData1_Conclustion) 
 
 
-
-
+splitData0_Findings <- unique(splitData0_Findings)
+splitData1_Findings <- unique(splitData1_Findings)
+splitData0_Conclustion <- unique(splitData0_Conclustion)
+splitData1_Conclustion <- unique(splitData1_Conclustion)
 
 
 
@@ -113,16 +138,11 @@ sentimental = function(sentences, positive, negative){
   
   scores = laply(sentences, function(sentence, positive, negative) {
     
-    sentence <- unlist(sentence) 
-    sentence <-   str_split(sentence,"\n")
-    sentence <- unlist(sentence) 
-    sentence <-   str_split(sentence,",")
-    sentence <- unlist(sentence) 
-    sentence <-   str_split(sentence,"at")
+    sentence <- splitText(sentence)
+   
 
     
-    
-    
+  
     words = unlist(sentence)                    # unlist() : list를 vector 객체로 구조변경
     
     pos.matches = match(words, positive)           # words의 단어를 positive에서 matching
@@ -225,7 +245,7 @@ for(i in 1:2653){
     resultScore[i] <- T
     
   }
-  
+
   else{
     resultScore[i] <- F
   }
@@ -248,12 +268,20 @@ for(i in 1:2653){
 }
 
 
+
 #정확도
 
 print((accuracy/2653))
 
 
 
-head(sort(table(resultScore), decreasing = T),2)
-head(sort(table(validData$AcuteInfarction), decreasing = T),2)
+result<-head(sort(table(resultScore), decreasing = T),2)
+result
+
+
+
+splitData0_Findings_top100 <-head(sort(table(splitData0_Findings), decreasing = T),10)
+splitData1_Findings_top100 <-head(sort(table(splitData1_Findings), decreasing = T),10)
+splitData0_Conclustion_top100 <-head(sort(table(splitData0_Conclustion), decreasing = T),10)
+splitData1_Conclustion_top100 <-head(sort(table(splitData1_Conclustion), decreasing = T),10)
 
